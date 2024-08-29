@@ -7,22 +7,28 @@ SQUARE_SIZE = 50
 BLACK_COLOR = (0, 0, 0)
 WHITE_COLOR = (255, 255, 255)
 SCREEN_COLOR = BLACK_COLOR
+COUNTER_COLOR = (139, 0, 0)
 
 # Initialize pygame
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Game of Life")
 clock = pygame.time.Clock()
+font = pygame.font.Font(None, 54)
+counter_pos = (WIDTH//2, SQUARE_SIZE//2)
 
 # Initialize grid with boolean values
 rows, cols = HEIGHT // SQUARE_SIZE, WIDTH // SQUARE_SIZE
 grid = np.zeros((rows, cols), dtype=bool)  # Create a grid with boolean values
 
 def gameLoop():
+    countGeneratins = 0
+    count_text = font.render(str(countGeneratins), True, COUNTER_COLOR)
+    text_rect = count_text.get_rect(center=counter_pos)
     holding_left = False
     holding_right = False
     running = True
-    fps = 30
+    fps = 60
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -42,11 +48,17 @@ def gameLoop():
                     holding_left = False
                 if event.button == 3:
                     holding_right = False
-                    fps = 30
+                    fps = 60
 
         if holding_right:
+            count_text = font.render(str(countGeneratins), True, (COUNTER_COLOR))
+            text_rect = count_text.get_rect(center=counter_pos)
+            countGeneratins += 1
             nextGen()
         if holding_left:
+            countGeneratins = 0
+            count_text = font.render(str(countGeneratins), True, (COUNTER_COLOR))
+            text_rect = count_text.get_rect(center=counter_pos)
             nx, ny = pygame.mouse.get_pos()
             if nx // SQUARE_SIZE != x // SQUARE_SIZE or ny // SQUARE_SIZE != y // SQUARE_SIZE:
                 x, y = nx, ny
@@ -56,6 +68,7 @@ def gameLoop():
         screen.fill(SCREEN_COLOR)
         drawCells()
         drawGrid()
+        screen.blit(count_text, text_rect)
 
         pygame.display.update()
         clock.tick(fps)  # Set the frame rate

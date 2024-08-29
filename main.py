@@ -19,21 +19,39 @@ rows, cols = HEIGHT // SQUARE_SIZE, WIDTH // SQUARE_SIZE
 grid = np.zeros((rows, cols), dtype=bool)  # Create a grid with boolean values
 
 def gameLoop():
+    holding_left = False
+    holding_right = False
     running = True
+    fps = 30
     while running:
-        fps = 30
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 return
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
+                    holding_left = True
                     x, y = pygame.mouse.get_pos()
                     row, col = y // SQUARE_SIZE, x // SQUARE_SIZE
                     grid[row, col] = not grid[row, col]  # Change cell state
-                elif event.button == 3:
-                    nextGen()
-                    fps = 30 # For future implementation
+                if event.button == 3:
+                    holding_right = True
+                    fps = 8 # Slower visualization while holding
+            if event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    holding_left = False
+                if event.button == 3:
+                    holding_right = False
+                    fps = 30
+
+        if holding_right:
+            nextGen()
+        if holding_left:
+            nx, ny = pygame.mouse.get_pos()
+            if nx // SQUARE_SIZE != x // SQUARE_SIZE or ny // SQUARE_SIZE != y // SQUARE_SIZE:
+                x, y = nx, ny
+                row, col = (y // SQUARE_SIZE) % (WIDTH // SQUARE_SIZE), (x // SQUARE_SIZE) % (HEIGHT // SQUARE_SIZE)
+                grid[row, col] = not grid[row, col]  # Change cell state
 
         screen.fill(SCREEN_COLOR)
         drawCells()
@@ -82,8 +100,5 @@ def nextGen():
     
     # Update the grid with the new generation
     grid = tempGrid
-
-
-
 
 gameLoop()
